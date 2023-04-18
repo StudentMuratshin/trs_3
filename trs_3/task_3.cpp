@@ -4,107 +4,111 @@
 
 int main()
 {
-	ofstream u_1("C:\\Users\\PETA4\\Desktop\\3\\6_sem\\trs\\labs\\trs_3\\out\\u3_out.csv");
-	double max_diff = 0;
-	const int n = 6;
-	const int m = 5;
-	const double w = 1.5;
-	const int lx = 2, ly = 1;
-	double hx = static_cast<double>(lx) / n;
-	double hy = static_cast<double>(ly) / m;
-	vector < vector <double> > u_prev(n, vector <double>(m));
-	vector < vector <double> > u(n, vector <double>(m));
-	vector < double > f((m - 1) * (n - 1));
-	vector < vector <double> > LL((m - 1) * (n - 1), vector <double>((m - 1) * (n - 1)));
-	vector < vector <double> > UU((m - 1) * (n - 1), vector <double>((m - 1) * (n - 1)));
-	vector < vector <double> > A((m - 1) * (n - 1), vector <double>((m - 1) * (n - 1)));
-	double betta = 1. / hx / hx;
+	//ofstream u_1("C:\\Users\\PETA4\\Desktop\\3\\6_sem\\trs\\labs\\trs_3\\out\\u3_out.csv");
+	const double lx = 2., ly = 1.;
+	
+
+	auto f = [](double x, double y) {
+		return  -pi * pi / 4. * sin(x * pi / 2.) * (17 * cos(pi * y) * cos(pi * y) - 9.);
+	};
+
+	auto phi1 = [](double x = 0, double y = 0) {
+		return 0;
+	};
+
+	auto phi2 = [](double x = 0, double y = 0) {
+		return 0;
+	};
+
+	auto phi3 = [](double x = 0, double y = 0) {
+		return 0;
+	};
+
+	auto phi4 = [](double x = 0, double y = 0) {
+		return 0;
+	};
+
+
+	auto exact_sol = [lx, ly](double x, double y) {
+		return sin(pi * x / 2.) * sin(pi * y) * sin(pi * y);
+	};
+	
+
+	auto getF = [phi1, phi2, phi3, phi4, f](int N, int M, double hx, double hy) {
+		vector<double> F(N * M);
+		{
+			int i, j;
+			// F для левой границы
+			i = 0;
+			j = 0;
+			F[j * M + i] = -f(i * hx, j * hy) - phi1() / hx / hx - phi3() / hy / hy;
+			for (j = 1; j < N - 1; ++j) {
+				F[j * M + i] = -f(i * hx, j * hy) - phi1() / hx / hx;
+			}
+			F[j * M + i] = -f(i * hx, j * hy) - phi1() / hx / hx - phi4() / hy / hy;
+
+			// F для верхней границы
+			for (i = 1; i < M - 1; ++i) {
+				F[j * M + i] = -f(i * hx, j * hy) - phi4() / hy / hy;
+			}
+
+			F[j * M + i] = -f(i * hx, j * hy) - phi2() / hx / hx - phi4() / hy / hy;
+
+			// F для правой границы
+			for (j = N - 2; j > 0; --j) {
+				F[j * M + i] = -f(i * hx, j * hy) - phi2() / hx / hx;
+			}
+			F[j * M + i] = -f(i * hx, j * hy) - phi2() / hx / hx - phi3() / hy / hy;
+
+			// F  для нижней границы
+			for (i = M - 2; i > 0; --i) {
+				F[j * M + i] = -f(i * hx, j * hy) - phi3() / hy / hy;
+			}
+
+			// внутренняя область
+			for (j = 1; j < N - 1; ++j) {
+				for (i = 1; i < M - 1; ++i) {
+					F[j * M + i] = -f(i * hx, j * hy);
+				}
+			}
+		}
+		return F;
+
+	};
+
+	const int N = 30;
+	const int M = 30;
+	double hx = static_cast<double>(lx) / N;
+	double hy = static_cast<double>(ly) / M;
+	
+	vector<double> U(N * M, 0.); // Начальное приближение нулевой вектор
+	
+	double alpha = -2. * (1. / hx / hx + 1. / hy / hy);
+	double beta = 1. / hx / hx;
 	double gamma = 1. / hy / hy;
-	double alpha = -2. / hx / hx - 2. / hy / hy;
-
-	f[0] = F(hx, hy) - u_prev[0][1] / hx / hx - u_prev[1][0] / hy / hy;
-	f[1 * (m - 2)] = F(hx, (m - 1) * hy) - u_prev[0][m - 2] / hx / hx - u_prev[1][m - 1] / hy / hy;
-	f[(n - 2) * 1] = F(hx * (n - 1), hy) - u_prev[n - 1][1] / hx / hx - u_prev[n - 2][0] / hy / hy;
-	f[n - 2][m - 2] = F(hx * (n - 1), hy * (m - 1)) - u_prev[n - 1][m - 2] / hx / hx - u_prev[n - 2][m - 1] / hy / hy;
-
-	for (int j = 2; j < m - 2; j++)
-	{
-		f[1][j] = F(hx, j * hy) - u_prev[0][j] / hx / hx;
-		f[n - 2][j] = F((n - 1) * hx, j * hy) - u_prev[n - 1][j] / hx / hx;
-	}
-
-	for (int i = 2; i < n - 2; i++)
-	{
-		f[i][1] = F(i * hx, hy) - u_prev[i][1] / hy / hy;
-		f[i][m - 2] = F(i * hx, (m - 1) * hy) - u_prev[i][m - 2] / hy / hy;
-	}
-
-	for (int j = 2; j < m - 1; j++)
-	{
-		for (int i = 2; i < n - 1; i++)
-		{
-			f[i][j] = F(i * hx, j * hy);
+	
+	vector<double> F = getF(N, M, hx, hy);
+	
+	EllipticPDEMatrixGen pm(alpha, beta, gamma, N, M);
+	
+	vector<double> Lower(M * N * M * N);
+	vector<double> Upper(M * N * M * N);
+	
+	lu_decompostion(N * M, pm, Lower, Upper);
+	
+	solve_lu(N * M, Lower, Upper, F, U);
+	
+	double error = 0.;
+	
+	for (int j = 0; j < N; ++j) {
+		for (int i = 0; i < M; ++i) {
+			double x = i * hx;
+			double y = j * hy;
+			error = std::max(error, abs(U[j * M + i] - sin(pi * x / 2.) * sin(pi * y) * sin(pi * y)));
 		}
 	}
-	int kol = 0;
-	do
-	{
-		kol++;
-		max_diff = -1;
+	
+	cout << "LU N = " << N << " M  = " << M << " " << " error: " << error << endl;
 
-
-		if (kol != 1) u_prev = u;
-
-		for (int i = 0; i < (m - 2) * (n - 1); i++)
-		{
-			A[i][i] = alpha;
-			A[i][i + 1] = betta;
-			A[i + 1][i] = betta;
-			A[i][n - 1 + i] = gamma;
-			A[n - 1 + i][i] = gamma;
-		}
-
-		for (int i = (m - 2) * (n - 1); i < (m - 1) * (n - 1) -1; i++)
-		{
-			A[i][i] = alpha;
-			A[i][i + 1] = betta;
-			A[i + 1][i] = betta;
-		}
-		A[(m - 1) * (n - 1) - 1][(m - 1) * (n - 1) - 1] = alpha;
-		
-		for (int j = 0; j < (m - 1) * (n - 1); j++)
-		{
-			for (int i = 0; i < (m - 1) * (n - 1); i++)
-			{
-				//double diff = abs(u_prev[i][j] - u[i][j]);
-				//double diff = abs(U(i * hx, j * hy) - u_prev[i][j]);
-				/*if (diff > max_diff)
-				{
-					max_diff = diff;
-				}*/
-				cout << A[i][j] << " ";
-			}
-			cout << endl;
-		}
-		//cout << i * hx << " " << j * hy << "          " << u[i][j] << "           " << U(i * hx, j * hy) << endl;
-		//cout << max_diff << endl;
-	} while (max_diff > 1);
-
-	max_diff = 0;
-
-	/*for (int j = 0; j < m; j++)
-	{
-		for (int i = 0; i < n; i++)
-		{
-			double diff = abs(U(i * hx, j * hy) - u[i][j]);
-			if (diff > max_diff)
-			{
-				max_diff = diff;
-			}
-
-			u_1 << i * hx << " " << j * hy << " " << u[i][j] << endl;
-		}
-	}
-	cout << "Diff: " << max_diff << "  Count: " << kol << endl;*/
-	u_1.close();
+	//u_1.close();
 }
