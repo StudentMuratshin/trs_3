@@ -3,5 +3,6 @@ C:/Users/PETA4/Desktop/3/6_sem/trs/labs/trs_3/out/build/x64-debug/CMakeFiles/reb
 C:/Users/PETA4/Desktop/3/6_sem/trs/labs/trs_3/out/build/x64-debug/trs_3/CMakeFiles/task_1.dir
 C:/Users/PETA4/Desktop/3/6_sem/trs/labs/trs_3/out/build/x64-debug/trs_3/CMakeFiles/task_2.dir
 C:/Users/PETA4/Desktop/3/6_sem/trs/labs/trs_3/out/build/x64-debug/trs_3/CMakeFiles/task_3.dir
+C:/Users/PETA4/Desktop/3/6_sem/trs/labs/trs_3/out/build/x64-debug/trs_3/CMakeFiles/task_4.dir
 C:/Users/PETA4/Desktop/3/6_sem/trs/labs/trs_3/out/build/x64-debug/trs_3/CMakeFiles/edit_cache.dir
 C:/Users/PETA4/Desktop/3/6_sem/trs/labs/trs_3/out/build/x64-debug/trs_3/CMakeFiles/rebuild_cache.dir

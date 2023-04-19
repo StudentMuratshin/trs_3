@@ -76,39 +76,44 @@ int main()
 
 	};
 
-	const int N = 30;
-	const int M = 30;
-	double hx = static_cast<double>(lx) / N;
-	double hy = static_cast<double>(ly) / M;
+	vector<int> N = { 10,20,30,40,50,60,70,80,90,100 };
+	for (auto n: N)
+	{
+		const int N = n;
+		const int M = n;
+		double hx = static_cast<double>(lx) / N;
+		double hy = static_cast<double>(ly) / M;
 	
-	vector<double> U(N * M, 0.); // Ќачальное приближение нулевой вектор
+		vector<double> U(N * M, 0.); // Ќачальное приближение нулевой вектор
 	
-	double alpha = -2. * (1. / hx / hx + 1. / hy / hy);
-	double beta = 1. / hx / hx;
-	double gamma = 1. / hy / hy;
+		double alpha = -2. * (1. / hx / hx + 1. / hy / hy);
+		double beta = 1. / hx / hx;
+		double gamma = 1. / hy / hy;
 	
-	vector<double> F = getF(N, M, hx, hy);
+		vector<double> F = getF(N, M, hx, hy);
 	
-	EllipticPDEMatrixGen pm(alpha, beta, gamma, N, M);
+		EllipticPDEMatrixGen pm(alpha, beta, gamma, N, M);
 	
-	vector<double> Lower(M * N * M * N);
-	vector<double> Upper(M * N * M * N);
+		vector<double> Lower(M * N * M * N);
+		vector<double> Upper(M * N * M * N);
 	
-	lu_decompostion(N * M, pm, Lower, Upper);
+		lu_decompostion(N * M, pm, Lower, Upper);
 	
-	solve_lu(N * M, Lower, Upper, F, U);
+		solve_lu(N * M, Lower, Upper, F, U);
 	
-	double error = 0.;
+		double error = 0.;
 	
-	for (int j = 0; j < N; ++j) {
-		for (int i = 0; i < M; ++i) {
-			double x = i * hx;
-			double y = j * hy;
-			error = std::max(error, abs(U[j * M + i] - sin(pi * x / 2.) * sin(pi * y) * sin(pi * y)));
+		for (int j = 0; j < N; ++j) {
+			for (int i = 0; i < M; ++i) {
+				double x = i * hx;
+				double y = j * hy;
+				error = std::max(error, abs(U[j * M + i] - sin(pi * x / 2.) * sin(pi * y) * sin(pi * y)));
+			}
 		}
-	}
 	
-	cout << "LU N = " << N << " M  = " << M << " " << " error: " << error << endl;
+		cout << "m, n: " << N << "   Diff: " << setprecision(8) << error << endl;
+
+	}
 
 	//u_1.close();
 }
