@@ -1,99 +1,24 @@
-﻿#include <iostream>
-#include <iomanip>
+﻿#define _USE_MATH_DEFINES
+#include <iostream>
+#include <cmath>
+#include <vector>
+#include <span>
+#include <fstream>
+#include <format>
 #include <Eigen/Sparse>
+#include <Eigen/Dense>
+
+constexpr auto pi = 3.14159265358979323846;
 
 using namespace Eigen;
 using namespace std;
 
-constexpr auto pi = 3.14159265358979323846;
-
-struct EllipticPDEMatrixGen {
-	double alpha;
-	double beta;
-	double gamma;
-
-	int N;
-	int M;
-	EllipticPDEMatrixGen(double alpha, double beta, double gamma, int N, int M) : alpha(alpha), beta(beta), gamma(gamma), N(N), M(M) {}
-
-	const double& operator()(int i, int j) const {
-		if (i == j) {
-			return alpha;
-		}
-		else if (i - j == -1 && (i + 1) % M != 0) {
-			return beta;
-		}
-		else if (i - j == 1 && (i % M != 0)) {
-			return beta;
-		}
-		else if (abs(i - j) == M) {
-			return gamma;
-		}
-		else {
-			return 0.;
-		}
-	}
-};
-
-void lu_decompostion(const unsigned int n, EllipticPDEMatrixGen A, SparseMatrix<double>& L, SparseMatrix<double>& U) {
-	for (int i = 0; i < n; ++i) {
-		L.insert(i, 0) = A(i, 0);
-		U.insert(0, i) = A(0, i) / L.coeff(0, 0);
-	}
-
-	for (int i = 1; i < n; i++)
-	{
-		for (int j = i; j < n; j++)
-		{
-			U.insert(i, j) = A(i, j);
-
-			for (int k = 0; k < i; k++)
-			{
-				U.coeffRef(i, j) = U.coeff(i,j) - L.coeff(i, k) * U.coeff(k, j);
-			}
-
-			L.insert(j, i) = A(i, j);
-
-			for (int k = 0; k < i; k++)
-			{
-				L.coeffRef(j, i) = L.coeff(j,i) - L.coeff(j, k) * U.coeff(k, i);
-			}
-
-			L.insert(j, i) /= U.coeff(i, i);
-		}
-	}
-}
-
-void backward_up(const unsigned int n, SparseMatrix<double>& U, vector<double> b, vector<double>& x) {
-	for (int i = n - 1; i >= 0; --i) {
-		x[i] = b[i];
-		for (int j = i + 1; j < n; ++j) {
-			x[i] -= U.coeff(j, i) * x[j];
-		}
-		x[i] /= U.coeff(i, i);
-	}
-}
-
-void backward_low(const unsigned int n, SparseMatrix<double>& L, vector<double> b, vector<double>& y) {
-	for (int i = 0; i < n; ++i) {
-		y[i] = b[i];
-		for (int j = 0; j < i; ++j) {
-			y[i] -= L.coeff(i, j) * y[j];
-		}
-		y[i] /= L.coeff(i, i);
-	}
-}
-
-
-void solve_lu(const unsigned int n, SparseMatrix<double>& L, SparseMatrix<double>& U, vector<double> b, vector<double>& x) {
-	vector<double> y(n);
-	backward_low(n, L, b, y);
-	backward_up(n, U, y, x);
-}
 
 int main() {
-
-	const double lx = 2., ly = 1.;
+	
+	vector<int> N_arr = { 25 };
+	const double lx = 1.;
+	const double ly = 2.;
 
 	auto f = [](double x, double y) {
 		return  -pi * pi / 4. * sin(x * pi / 2.) * (17 * cos(pi * y) * cos(pi * y) - 9.);
@@ -115,17 +40,31 @@ int main() {
 		return 0;
 	};
 
-
-	auto exact_sol = [lx, ly](double x, double y) {
-		return sin(pi * x / 2.) * sin(pi * y) * sin(pi * y);
+	auto b = [](double x, double y) {
+		return sin(pi*x);
 	};
 
+	auto by = [](double x, double y) {
+		return 0;
+	};
+
+	auto a = [](double x, double y) {
+		return 2+sin(pi*y);
+	};
+
+	auto ax = [](double x, double y) {
+		return 0;
+	};
+
+	auto c = [](double x, double y) {
+		return x;
+	};
 
 	auto getF = [phi1, phi2, phi3, phi4, f](int N, int M, double hx, double hy) {
-		vector<double> F(N * M);
+		VectorXd F(N * M);
 		{
 			int i, j;
-			// F äëÿ ëåâîé ãðàíèöû
+			// F для левой границы
 			i = 0;
 			j = 0;
 			F[j * M + i] = -f(i * hx, j * hy) - phi1() / hx / hx - phi3() / hy / hy;
@@ -134,25 +73,25 @@ int main() {
 			}
 			F[j * M + i] = -f(i * hx, j * hy) - phi1() / hx / hx - phi4() / hy / hy;
 
-			// F äëÿ âåðõíåé ãðàíèöû
+			// F для верхней границы
 			for (i = 1; i < M - 1; ++i) {
 				F[j * M + i] = -f(i * hx, j * hy) - phi4() / hy / hy;
 			}
 
 			F[j * M + i] = -f(i * hx, j * hy) - phi2() / hx / hx - phi4() / hy / hy;
 
-			// F äëÿ ïðàâîé ãðàíèöû
+			// F для правой границы
 			for (j = N - 2; j > 0; --j) {
 				F[j * M + i] = -f(i * hx, j * hy) - phi2() / hx / hx;
 			}
 			F[j * M + i] = -f(i * hx, j * hy) - phi2() / hx / hx - phi3() / hy / hy;
 
-			// F  äëÿ íèæíåé ãðàíèöû
+			// F  для нижней границы
 			for (i = M - 2; i > 0; --i) {
 				F[j * M + i] = -f(i * hx, j * hy) - phi3() / hy / hy;
 			}
 
-			// âíóòðåííÿÿ îáëàñòü
+			// внутренняя область
 			for (j = 1; j < N - 1; ++j) {
 				for (i = 1; i < M - 1; ++i) {
 					F[j * M + i] = -f(i * hx, j * hy);
@@ -160,55 +99,72 @@ int main() {
 			}
 		}
 		return F;
-
 	};
 
-	vector<int> N = { 4,20,30,40,50,60,70,80,90,100 };
-	for (auto n : N)
-	{
-		const int N = n;
-		const int M = n;
+	ofstream u_1("C:\\Users\\PETA4\\Desktop\\3\\6_sem\\trs\\labs\\trs_3\\out\\u4_out.csv");
+
+	for (auto N : N_arr) {
+		int M = N;
 		double hx = static_cast<double>(lx) / N;
 		double hy = static_cast<double>(ly) / M;
-
-		vector<double> U(N * M, 0.); // Íà÷àëüíîå ïðèáëèæåíèå íóëåâîé âåêòîð
-
-		double alpha = -2. * (1. / hx / hx + 1. / hy / hy);
-		double beta = 1. / hx / hx;
-		double gamma = 1. / hy / hy;
-
-		vector<double> F = getF(N, M, hx, hy);
-
-		//SparseMatrix<double> A((N - 1) * (M - 1), (N - 1)* (M - 1));
-
-		//for (int i = 0; i < (N - 1) * (M - 2); i++)
-		//{
-		//	A.insert(i,i) = alpha;
-		//	A.insert(i, i + 1) = beta;
-		//	A.insert(i + 1, i) = beta;
-
-		//}
-		EllipticPDEMatrixGen A(alpha, beta, gamma, N, M);
-		SparseMatrix<double> Lower(N * M, N * M);
-		SparseMatrix<double> Upper(N * M, N * M);
-
-		lu_decompostion(N * M, A, Lower, Upper);
-
-		solve_lu(N * M, Lower, Upper, F, U);
-
-		double error = 0.;
-
-		for (int j = 0; j < N; ++j) {
-			for (int i = 0; i < M; ++i) {
-				double x = i * hx;
-				double y = j * hy;
-				error = std::max(error, abs(U[j * M + i] - sin(pi * x / 2.) * sin(pi * y) * sin(pi * y)));
-				//cout << x << " " << y << U[j * M + i] <<endl;
+		cout << "Process: " << N << " " << M << endl;
+		std::vector<Eigen::Triplet<double>> triplets;
+		// заполним левые гаммы
+		for (int j = 1; j < M; ++j) {
+			for (int i = 0; i < N; ++i) {
+				double value = -by(i * hx, j * hy) / 2. / hy + b(i * hx, j * hy) / hy / hy;
+				triplets.push_back(Eigen::Triplet<double>(j * N + i, (j - 1) * N + i, value));
 			}
 		}
 
-		cout << "m, n: " << N << "   Diff: " << setprecision(8) << error << endl;
+		// правые гаммы
+		for (int j = 0; j < M - 1; ++j) {
+			for (int i = 0; i < N; ++i) {
+				double value = by(i * hx, j * hy) / 2. / hy + b(i * hx, j * hy) / hy / hy;
+				triplets.push_back(Eigen::Triplet<double>(j * N + i, (j + 1) * N + i, value));
+			}
+		}
+
+		// альфы
+		for (int j = 0; j < M; ++j) {
+			for (int i = 0; i < N; ++i) {
+				double value = -2. * (a(i * hx, j * hy) / hx / hx + b(i * hx, j * hy) / hy / hy) + c(i * hx, j * hy);
+				triplets.push_back(Eigen::Triplet<double>(j * N + i, j * N + i, value));
+			}
+		}
+
+		// левые беты
+		for (int j = 0; j < M; ++j) {
+			for (int i = 1; i < N; ++i) {
+				double value = -ax(i * hx, j * hy) / 2 / hx + a(i * hx, j * hy) / hx / hx;
+				triplets.push_back(Eigen::Triplet<double>(j * N + i, j * N + i - 1, value));
+			}
+		}
+
+		// правые беты
+		for (int j = 0; j < M; ++j) {
+			for (int i = 0; i < N - 1; ++i) {
+				double value = ax(i * hx, j * hy) / 2 / hx + a(i * hx, j * hy) / hx / hx;
+				triplets.push_back(Eigen::Triplet<double>(j * N + i, j * N + i + 1, value));
+			}
+		}
+
+		Eigen::SparseMatrix<double> A(N * M, N * M);
+		A.setFromTriplets(triplets.begin(), triplets.end());
+
+		ConjugateGradient<SparseMatrix<double>, Lower | Upper> cg;
+		cg.compute(A);
+		auto b = getF(N, M, hx, hy);
+		auto U = cg.solve(b);
+
+
+		for (int j = 0; j < M; ++j) {
+			for (int i = 0; i < N; ++i) {
+				u_1 << i * hx << " " << j * hy << " " << U[j * N + i] << "\n";
+			}
+		}
+		u_1.close();
 
 	}
-    return 0;
+
 }

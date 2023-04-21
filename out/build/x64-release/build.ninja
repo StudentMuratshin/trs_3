@@ -79,6 +79,7 @@ build cmake_object_order_depends_target_task_1: phony || trs_3\CMakeFiles\task_1
 
 build trs_3\CMakeFiles\task_1.dir\task_1.cpp.obj: CXX_COMPILER__task_1_Release C$:\Users\PETA4\Desktop\3\6_sem\trs\labs\trs_3\trs_3\task_1.cpp || cmake_object_order_depends_target_task_1
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG -std:c++20
+  INCLUDES = -IC:\Users\PETA4\Desktop\3\6_sem\trs\labs\trs_3\trs_3\eigen-3.4.0
   OBJECT_DIR = trs_3\CMakeFiles\task_1.dir
   OBJECT_FILE_DIR = trs_3\CMakeFiles\task_1.dir
   TARGET_COMPILE_PDB = trs_3\CMakeFiles\task_1.dir\
@@ -115,6 +116,7 @@ build cmake_object_order_depends_target_task_2: phony || trs_3\CMakeFiles\task_2
 
 build trs_3\CMakeFiles\task_2.dir\task_2.cpp.obj: CXX_COMPILER__task_2_Release C$:\Users\PETA4\Desktop\3\6_sem\trs\labs\trs_3\trs_3\task_2.cpp || cmake_object_order_depends_target_task_2
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG
+  INCLUDES = -IC:\Users\PETA4\Desktop\3\6_sem\trs\labs\trs_3\trs_3\eigen-3.4.0
   OBJECT_DIR = trs_3\CMakeFiles\task_2.dir
   OBJECT_FILE_DIR = trs_3\CMakeFiles\task_2.dir
   TARGET_COMPILE_PDB = trs_3\CMakeFiles\task_2.dir\
@@ -151,6 +153,7 @@ build cmake_object_order_depends_target_task_3: phony || trs_3\CMakeFiles\task_3
 
 build trs_3\CMakeFiles\task_3.dir\task_3.cpp.obj: CXX_COMPILER__task_3_Release C$:\Users\PETA4\Desktop\3\6_sem\trs\labs\trs_3\trs_3\task_3.cpp || cmake_object_order_depends_target_task_3
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG
+  INCLUDES = -IC:\Users\PETA4\Desktop\3\6_sem\trs\labs\trs_3\trs_3\eigen-3.4.0
   OBJECT_DIR = trs_3\CMakeFiles\task_3.dir
   OBJECT_FILE_DIR = trs_3\CMakeFiles\task_3.dir
   TARGET_COMPILE_PDB = trs_3\CMakeFiles\task_3.dir\
@@ -175,6 +178,43 @@ build trs_3\task_3.exe: CXX_EXECUTABLE_LINKER__task_3_Release trs_3\CMakeFiles\t
   TARGET_FILE = trs_3\task_3.exe
   TARGET_IMPLIB = trs_3\task_3.lib
   TARGET_PDB = trs_3\task_3.pdb
+
+# =============================================================================
+# Object build statements for EXECUTABLE target task_4
+
+
+#############################################
+# Order-only phony target for task_4
+
+build cmake_object_order_depends_target_task_4: phony || trs_3\CMakeFiles\task_4.dir
+
+build trs_3\CMakeFiles\task_4.dir\task_4.cpp.obj: CXX_COMPILER__task_4_Release C$:\Users\PETA4\Desktop\3\6_sem\trs\labs\trs_3\trs_3\task_4.cpp || cmake_object_order_depends_target_task_4
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG
+  INCLUDES = -IC:\Users\PETA4\Desktop\3\6_sem\trs\labs\trs_3\trs_3\eigen-3.4.0
+  OBJECT_DIR = trs_3\CMakeFiles\task_4.dir
+  OBJECT_FILE_DIR = trs_3\CMakeFiles\task_4.dir
+  TARGET_COMPILE_PDB = trs_3\CMakeFiles\task_4.dir\
+  TARGET_PDB = trs_3\task_4.pdb
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target task_4
+
+
+#############################################
+# Link the executable trs_3\task_4.exe
+
+build trs_3\task_4.exe: CXX_EXECUTABLE_LINKER__task_4_Release trs_3\CMakeFiles\task_4.dir\task_4.cpp.obj
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG
+  LINK_FLAGS = /machine:x64 /INCREMENTAL:NO /subsystem:console
+  LINK_LIBRARIES = kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+  OBJECT_DIR = trs_3\CMakeFiles\task_4.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_COMPILE_PDB = trs_3\CMakeFiles\task_4.dir\
+  TARGET_FILE = trs_3\task_4.exe
+  TARGET_IMPLIB = trs_3\task_4.lib
+  TARGET_PDB = trs_3\task_4.pdb
 
 
 #############################################
@@ -214,6 +254,10 @@ build task_3: phony trs_3\task_3.exe
 
 build task_3.exe: phony trs_3\task_3.exe
 
+build task_4: phony trs_3\task_4.exe
+
+build task_4.exe: phony trs_3\task_4.exe
+
 # =============================================================================
 # Folder targets.
 
@@ -229,7 +273,7 @@ build all: phony trs_3\all
 #############################################
 # Folder: C:/Users/PETA4/Desktop/3/6_sem/trs/labs/trs_3/out/build/x64-release/trs_3
 
-build trs_3\all: phony trs_3\task_1.exe trs_3\task_2.exe trs_3\task_3.exe
+build trs_3\all: phony trs_3\task_1.exe trs_3\task_2.exe trs_3\task_3.exe trs_3\task_4.exe
 
 # =============================================================================
 # Built-in targets
